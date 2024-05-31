@@ -2,8 +2,8 @@ import requests
 from notion_client import Client
 
 # NotionのAPIトークンとデータベースIDを設定
-notion = Client(auth="secret_bXbW2OP0Uwlc5e7xNxBDa9NbsFkAujzbVeoNI7C3Vlt")
-database_id = "672217949ebb4c119cce3979e27b99a8"
+notion = Client(auth="your_notion_api_token")
+database_id = "your-database-id"
 
 # CrossRef APIを使ってDOIからメタデータを取得
 def get_metadata(doi):
