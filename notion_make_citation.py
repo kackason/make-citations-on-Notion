@@ -2,7 +2,7 @@ import requests
 from notion_client import Client
 
 # NotionのAPIトークンとデータベースIDを設定
-notion = Client(auth="your_notion_api_token")
+notion = Client(auth="your-notion-integration-token")
 database_id = "your-database-id"
 
 # CrossRef APIを使ってDOIからメタデータを取得
@@ -24,7 +24,17 @@ def get_metadata(doi):
         return None
 
 # Notionデータベースからデータを取得
-response = notion.databases.query(database_id=database_id)
+response = notion.databases.query(
+        **{
+            "database_id": database_id,
+            "filter": {
+                "property": "Generate",
+                "checkbox": {
+                    "equals": True
+                }
+            }
+        }
+ )
 items = response['results']
 
 # 取得したデータの表示と更新
@@ -46,6 +56,7 @@ for item in items:
                 '巻': {'rich_text': [{'text': {'content': volume}}]},
                 '号': {'rich_text': [{'text': {'content': issue}}]},
                 'ページ範囲': {'rich_text': [{'text': {'content': pages}}]},
-                '引用': {'rich_text': [{'text': {'content': citation}}]}
+                '引用': {'rich_text': [{'text': {'content': citation}}]},
+                'Generate': {'checkbox': False}
             }
         )
