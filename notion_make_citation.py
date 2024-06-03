@@ -1,10 +1,11 @@
 import requests
 from notion_client import Client
 from os import getenv
+import logging
 
 # NotionのAPIトークンとデータベースIDを設定
-#notion = Client(auth="secret_2LWq64NdF6URDHwbQxggNhGkFoVlcsPrKc1cWmQzm4k")
-#database_id = "514c4f85887e421aa475bb1552078e4b"
+#notion = "your_notion_api_token"
+#database_id = "your_notion_database_id"
 notion = Client(auth=getenv("NOTION_API"))
 database_id =getenv("PAPER_DATABASE")
 
@@ -26,8 +27,31 @@ def get_metadata(doi):
     else:
         return None
 
+# DOIからBibTeXを取得
+def get_bibtex_from_doi(doi):
+    url = f"https://doi.org/{doi}"
+    headers = {"Accept": "application/x-bibtex"}
+    
+    response = requests.get(url, headers=headers)
+    
+    if response.status_code == 200:
+        return response.text
+    else:
+        print(f"Error: Unable to retrieve BibTeX for DOI {doi}")
+        return None
+
 # Notionデータベースからデータを取得
-response = notion.databases.query(database_id=database_id)
+response = notion.databases.query(
+        **{
+            "database_id": database_id,
+            "filter": {
+                "property": "Generate",
+                "checkbox": {
+                    "equals": True
+                }
+            }
+        }
+)
 items = response['results']
 
 # 取得したデータの表示と更新
@@ -50,9 +74,18 @@ for item in items:
                     '巻': {'rich_text': [{'text': {'content': volume}}]},
                     '号': {'rich_text': [{'text': {'content': issue}}]},
                     'ページ範囲': {'rich_text': [{'text': {'content': pages}}]},
-                    '引用': {'rich_text': [{'text': {'content': citation}}]}
+                    '引用': {'rich_text': [{'text': {'content': citation}}]},
+                    'Generate': {'checkbox': False},
+                    'BibTeX': {'rich_text': [{'text': {'content': get_bibtex_from_doi(doi)}}]},
+                    # 'Status': {'select': {'name': '引用済'}},
                 }
             )
-    except:
+    except IndexError as e:
+        logging.error(f"IndexError: {e} - DOI not found in item:")
         continue
-
+    except Exception as e:
+        logging.error(f"Unexpected error: {e} - for item: {item}")
+        continue
+    except KeyError as e:
+        logging.error(f"KeyError: {e} - for item: {item}")
+        continue
