@@ -1,9 +1,12 @@
 import requests
 from notion_client import Client
+from os import getenv
 
 # NotionのAPIトークンとデータベースIDを設定
-notion = Client(auth="your_notion_api_token")
-database_id = "your-database-id"
+#notion = Client(auth="secret_2LWq64NdF6URDHwbQxggNhGkFoVlcsPrKc1cWmQzm4k")
+#database_id = "514c4f85887e421aa475bb1552078e4b"
+notion = Client(auth=getenv("NOTION_API"))
+database_id =getenv("PAPER_DATABASE")
 
 # CrossRef APIを使ってDOIからメタデータを取得
 def get_metadata(doi):
@@ -29,23 +32,27 @@ items = response['results']
 
 # 取得したデータの表示と更新
 for item in items:
-    doi = item['properties']['DOI']['rich_text'][0]['text']['content']
-    metadata = get_metadata(doi)
-    if metadata:
-        title, authors, year, journal, volume, issue, pages = metadata
-        citation = f"{authors}. ({year}). {title}. *{journal}, {volume}*({issue}), {pages}. https://doi.org/{doi}"
-        
-        # Notionデータベースに引用を追加
-        notion.pages.update(
-            page_id=item['id'],
-            properties={
-                'タイトル': {'title': [{'text': {'content': title}}]},
-                '著者': {'rich_text': [{'text': {'content': authors}}]},
-                '年': {'rich_text': [{'text': {'content': str(year)}}]},
-                '収録刊行物': {'rich_text': [{'text': {'content': journal}}]},
-                '巻': {'rich_text': [{'text': {'content': volume}}]},
-                '号': {'rich_text': [{'text': {'content': issue}}]},
-                'ページ範囲': {'rich_text': [{'text': {'content': pages}}]},
-                '引用': {'rich_text': [{'text': {'content': citation}}]}
-            }
-        )
+    try:
+        doi = item['properties']['DOI']['rich_text'][0]['text']['content']
+        metadata = get_metadata(doi)
+        if metadata:
+            title, authors, year, journal, volume, issue, pages = metadata
+            citation = f"{authors}. ({year}). {title}. *{journal}, {volume}*({issue}), {pages}. https://doi.org/{doi}"
+            
+            # Notionデータベースに引用を追加
+            notion.pages.update(
+                page_id=item['id'],
+                properties={
+                    'タイトル': {'title': [{'text': {'content': title}}]},
+                    '著者': {'rich_text': [{'text': {'content': authors}}]},
+                    '年': {'rich_text': [{'text': {'content': str(year)}}]},
+                    '収録刊行物': {'rich_text': [{'text': {'content': journal}}]},
+                    '巻': {'rich_text': [{'text': {'content': volume}}]},
+                    '号': {'rich_text': [{'text': {'content': issue}}]},
+                    'ページ範囲': {'rich_text': [{'text': {'content': pages}}]},
+                    '引用': {'rich_text': [{'text': {'content': citation}}]}
+                }
+            )
+    except:
+        continue
+
