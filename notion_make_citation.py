@@ -76,7 +76,8 @@ for item in items:
                     'ページ範囲': {'rich_text': [{'text': {'content': pages}}]},
                     '引用': {'rich_text': [{'text': {'content': citation}}]},
                     'Generate': {'checkbox': False},
-                    #'BibTeX': {'rich_text': [{'text': {'content': get_bibtex_from_doi(doi)}}]},
+                    'BibTeX': {'rich_text': [{'text': {'content': get_bibtex_from_doi(doi)}}]},
+                    # 'Status': {'select': {'name': '引用済'}},
                 }
             )
     except IndexError as e:
