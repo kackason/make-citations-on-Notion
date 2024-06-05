@@ -77,15 +77,14 @@ for item in items:
                     '引用': {'rich_text': [{'text': {'content': citation}}]},
                     'Generate': {'checkbox': False},
                     'BibTeX': {'rich_text': [{'text': {'content': get_bibtex_from_doi(doi)}}]},
-                    # 'Status': {'select': {'name': '引用済'}},
                 }
             )
     except IndexError as e:
         logging.error(f"IndexError: {e} - DOI not found in item:")
         continue
-    except Exception as e:
-        logging.error(f"Unexpected error: {e} - for item: {item}")
-        continue
     except KeyError as e:
         logging.error(f"KeyError: {e} - for item: {item}")
+        continue
+    except Exception as e:
+        logging.error(f"Unexpected error: {e} - for item: {item}")
         continue
